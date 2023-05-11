@@ -1,5 +1,7 @@
 package me.expression;
 
+import java.util.Objects;
+
 public class VariableValues {
     private final Variable variable;
     private final double start;
@@ -10,6 +12,19 @@ public class VariableValues {
         this.start = start;
         this.end = end;
         this.step = step;
+    }
+    public VariableValues(String[] s) {
+        if(s.length != 4) {
+            throw new IllegalArgumentException("VariableValues constructor takes 4 arguments.");
+        }
+        try {
+            this.variable = new Variable(s[0]);
+            this.start = Double.parseDouble(s[1]);
+            this.step = Double.parseDouble(s[2]);
+            this.end = Double.parseDouble(s[3]);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("Could not parse String to double.");
+        }
     }
     public Variable getVariable() {
         return variable;
@@ -30,5 +45,16 @@ public class VariableValues {
             values[i] = start + i * step;
         }
         return values;
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VariableValues variableValues = (VariableValues) o;
+        return Objects.equals(this.variable, variableValues.variable) && this.start == variableValues.start && this.end == variableValues.end && this.step == variableValues.step;
+    }
+    @Override
+    public String toString() {
+        return variable.toString() + ":" + start + ":" + step + ":" + end;
     }
 }

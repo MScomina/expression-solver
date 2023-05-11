@@ -8,14 +8,11 @@ import java.util.List;
 public class ComputationRequest implements Request {
     private final ComputationKind computationKind;
     private final ValuesKind valuesKind;
-    private final List<VariableValues> variableValues;
-    private final List<Node> expressions;
+    private final VariableValues[] variableValues;
+    private final Node[] expressions;
     /**
      * This is used to determine what kind of computation is being requested.<br>
-     * MIN: The minimum value of all the expressions. May fail if not all variables are specified. <br>
-     * MAX: The maximum value of all the expressions. May fail if not all variables are specified. <br>
-     * AVG: The average value of the first expression. May fail if not all variables are specified. <br>
-     * COUNT: The amount of values obtained.
+     * Also used in {@link me.utils.RequestParseUtils} for checking command list.
      */
     public enum ComputationKind {
         MIN,
@@ -25,17 +22,13 @@ public class ComputationRequest implements Request {
     }
     /**
      * This is used to determine what kind of values are being requested. <br>
-     * GRID: A cartesian product of all the values. <br>
-     * LIST: A list of all the values. May fail if the variables are not of the same length.<br>
-     * Example: <br>
-     * GRID of [1,2] and [3,4] will return [1,3], [1,4], [2,3], [2,4]. <br>
-     * LIST of [1,2] and [3,4] will return [1,3], [2,4].
+     * Also used in {@link me.utils.RequestParseUtils} for checking command list.
      */
     public enum ValuesKind {
         GRID,
         LIST;
     }
-    public ComputationRequest(ComputationKind computationKind, ValuesKind valuesKind, List<VariableValues> variableValues, List<Node> expressions) {
+    public ComputationRequest(ComputationKind computationKind, ValuesKind valuesKind, VariableValues[] variableValues, Node[] expressions) {
         this.computationKind = computationKind;
         this.valuesKind = valuesKind;
         this.variableValues = variableValues;
@@ -45,10 +38,10 @@ public class ComputationRequest implements Request {
     public double process() {
         return 0;
     }
-    public List<VariableValues> getVariableValues() {
+    public VariableValues[] getVariableValues() {
         return variableValues;
     }
-    public List<Node> getExpressions() {
+    public Node[] getExpressions() {
         return expressions;
     }
     public ComputationKind getComputationKind() {

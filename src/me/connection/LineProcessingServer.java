@@ -1,6 +1,9 @@
 package me.connection;
 
+import me.requests.ComputationRequest;
+import me.requests.Request;
 import me.requests.StatRequest;
+import me.utils.RequestParseUtils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -26,8 +29,13 @@ public class LineProcessingServer {
         }
     }
     public synchronized String process(String input) {
-        StatRequest statRequest = new StatRequest(this, StatRequest.StatType.REQS);
-        return String.valueOf(statRequest.process());
+        try {
+            Request request = RequestParseUtils.parseRequest(this, input);
+            String output = "Accepted request " + input + ", identified as: " + (request instanceof StatRequest ? "StatRequest" : (request instanceof ComputationRequest ? "ComputationRequest" : "Error")) + ".";
+            return output;
+        } catch (Exception e) {
+            return e.getMessage();
+        }
     }
     public String getQuitCommand() {
         return quitCommand;

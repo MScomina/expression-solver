@@ -6,10 +6,8 @@ public class StatRequest implements Request {
     private final StatType statType;
     private final LineProcessingServer server;
     /**
-     * This is used to determine what kind of statistic is being requested.<br>
-     * REQS: The amount of requests done on this server, excluding this one.<br>
-     * AVG_TIME: The average time required to process a request.<br>
-     * MAX_TIME: The maximum time required to process a request.<br>
+     * This is used to determine what kind of statistic is being requested. <br>
+     * Also used in {@link me.utils.RequestParseUtils} for checking command list.
      */
     public enum StatType {
         REQS,
