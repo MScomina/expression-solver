@@ -69,10 +69,8 @@ public class RequestParseUtils {
             try {
                 String[] variableValue = variableValuesSplit[k].split(":");
                 variableValues[k] = new VariableValues(variableValue);
-            } catch (NumberFormatException e) {
-                throw new ParsingException("Could not parse \"" + variableValuesSplit[k] + "\" as a VariableValue: could not parse String to double.");
             } catch (IllegalArgumentException e) {
-                throw new ParsingException("Could not parse \"" + variableValuesSplit[k] + "\" as a VariableValue: not enough arguments.");
+                throw new ParsingException("Could not parse \"" + variableValuesSplit[k] + "\" as a VariableValue: " + e.getMessage());
             }
         }
         // Checks and parses the other arguments.

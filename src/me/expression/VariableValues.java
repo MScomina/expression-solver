@@ -12,6 +12,12 @@ public class VariableValues {
         this.start = start;
         this.end = end;
         this.step = step;
+        if(this.step <= 0) {
+            throw new IllegalArgumentException("Step must be greater than 0.");
+        }
+        if(this.start > this.end) {
+            throw new IllegalArgumentException("Start must be less than end.");
+        }
     }
     public VariableValues(String[] s) {
         if(s.length != 4) {
@@ -24,6 +30,12 @@ public class VariableValues {
             this.end = Double.parseDouble(s[3]);
         } catch (NumberFormatException e) {
             throw new NumberFormatException("Could not parse String to double.");
+        }
+        if(this.step <= 0) {
+            throw new IllegalArgumentException("Step must be greater than 0.");
+        }
+        if(this.start > this.end) {
+            throw new IllegalArgumentException("Start must be less than end.");
         }
     }
     public Variable getVariable() {
@@ -45,6 +57,9 @@ public class VariableValues {
             values[i] = start + i * step;
         }
         return values;
+    }
+    public int getNumberOfValues() {
+        return (int) ((end - start) / step) + 1;
     }
     @Override
     public boolean equals(Object o) {
