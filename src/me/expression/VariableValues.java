@@ -7,18 +7,6 @@ public class VariableValues {
     private final double start;
     private final double end;
     private final double step;
-    public VariableValues(Variable variable, double start, double end, double step) {
-        this.variable = variable;
-        this.start = start;
-        this.end = end;
-        this.step = step;
-        if(this.step <= 0) {
-            throw new IllegalArgumentException("Step must be greater than 0.");
-        }
-        if(this.start > this.end) {
-            throw new IllegalArgumentException("Start must be less than end.");
-        }
-    }
     public VariableValues(String[] s) {
         if(s.length != 4) {
             throw new IllegalArgumentException("VariableValues constructor takes 4 arguments.");
@@ -35,20 +23,11 @@ public class VariableValues {
             throw new IllegalArgumentException("Step must be greater than 0.");
         }
         if(this.start > this.end) {
-            throw new IllegalArgumentException("Start must be less than end.");
+            throw new IllegalArgumentException("Start must be smaller than end.");
         }
     }
     public Variable getVariable() {
         return variable;
-    }
-    public double getStart() {
-        return start;
-    }
-    public double getEnd() {
-        return end;
-    }
-    public double getStep() {
-        return step;
     }
     public double[] getValues() {
         int size = (int) ((end - start) / step) + 1;

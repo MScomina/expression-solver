@@ -1,5 +1,7 @@
 package me.expression;
 
+import me.exceptions.ComputationException;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -37,6 +39,17 @@ public class Operator extends Node {
     this.type = type;
   }
 
+  @Override
+  public double solve(Variable[] variables, double[] values) throws ComputationException {
+    double out = type.getFunction().apply(new double[]{
+            getChildren().get(0).solve(variables, values),
+            getChildren().get(1).solve(variables, values)
+    });
+    //NOTE: If the Infinite and NaN results are not acceptable, uncomment the following line.
+    //if(Double.isInfinite(out) || Double.isNaN(out)) throw new ComputationException("Invalid computation: expression " + this + " returns Infinite/NaN with the values " + Arrays.toString(values) + ".");
+    return out;
+  }
+
   public Type getType() {
     return type;
   }
@@ -56,13 +69,11 @@ public class Operator extends Node {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("(");
-    sb.append(getChildren().stream()
-        .map(Node::toString)
-        .collect(Collectors.joining(" " + Character.toString(type.symbol) + " "))
-    );
-    sb.append(")");
-    return sb.toString();
+    String sb = "(" +
+            getChildren().stream()
+                    .map(Node::toString)
+                    .collect(Collectors.joining(" " + type.symbol + " ")) +
+            ")";
+    return sb;
   }
 }

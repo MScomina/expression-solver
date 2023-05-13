@@ -2,6 +2,7 @@ package me.requests;
 
 import me.exceptions.ComputationException;
 import me.expression.Node;
+import me.expression.Variable;
 import me.expression.VariableValues;
 
 import java.util.ArrayList;
@@ -14,27 +15,33 @@ public class ComputationRequest implements Request {
     private final Node[] expressions;
     @Override
     public double[] process() throws ComputationException {
-        int startingTime = (int) System.currentTimeMillis();
-        double output = 0;
+        long startingTime = System.currentTimeMillis();
+        double output = 0.0d;
+        Variable[] variables = new Variable[variableValues.length];
+        for (int i = 0; i < variables.length; i++) {
+            variables[i] = variableValues[i].getVariable();
+        }
         switch (valuesKind) {
-            case GRID:
+            case GRID -> {
                 switch (computationKind) {
-                    case MIN:
-                    case MAX:
-                    case AVG:
-                    case COUNT:
-                        int calc = 1;
-                        for(VariableValues variableValue : variableValues) {
+                    case MIN -> output = this.minimum(variables, this.getGridValues());
+                    case MAX -> output = this.maximum(variables, this.getGridValues());
+                    case AVG -> output = this.average(variables, this.getGridValues());
+                    case COUNT -> {
+                        long calc = 1;
+                        for (VariableValues variableValue : variableValues) {
                             calc *= variableValue.getNumberOfValues();
                         }
                         output = calc;
+                    }
                 }
-            case LIST:
+            }
+            case LIST -> {
                 switch (computationKind) {
-                    case MIN:
-                    case MAX:
-                    case AVG:
-                    case COUNT:
+                    case MIN -> output = this.minimum(variables, this.getListValues());
+                    case MAX -> output = this.maximum(variables, this.getListValues());
+                    case AVG -> output = this.average(variables, this.getListValues());
+                    case COUNT -> {
                         int lengthCheck = variableValues[0].getNumberOfValues();
                         for (VariableValues variableValue : variableValues) {
                             if (variableValue.getNumberOfValues() != lengthCheck) {
@@ -42,7 +49,9 @@ public class ComputationRequest implements Request {
                             }
                         }
                         output = lengthCheck;
+                    }
                 }
+            }
         }
         double secondsElapsed = ((double)(System.currentTimeMillis() - startingTime))/1000.0d;
         return new double[]{secondsElapsed, output};
@@ -116,6 +125,65 @@ public class ComputationRequest implements Request {
             }
         }
         return result;
+    }
+
+    /**
+     * Calculates the minimum of all expressions, for all values in the valuesList.
+     *
+     * @param variables  All the variables to be used in the expressions.
+     * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
+     * @return The minimum of all expressions, for all values in the valuesList.
+     * @throws ComputationException if the expression cannot be resolved.: E.g. x/0.
+     */
+    private double minimum(Variable[] variables, ArrayList<double[]> valuesList) throws ComputationException {
+        double output = Double.MAX_VALUE;
+        for (Node expression : expressions) {
+            for (double[] values : valuesList) {
+                double result = expression.solve(variables, values);
+                if (result < output) {
+                    output = result;
+                }
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Calculates the maximum of all expressions, for all values in the valuesList.
+     *
+     * @param variables  All the variables to be used in the expressions.
+     * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
+     * @return The maximum of all expressions, for all values in the valuesList.
+     * @throws ComputationException if the expression cannot be resolved. E.g.: x/0.
+     */
+    private double maximum(Variable[] variables, ArrayList<double[]> valuesList) throws ComputationException {
+        double output = -Double.MAX_VALUE;
+        for (Node expression : expressions) {
+            for (double[] values : valuesList) {
+                double result = expression.solve(variables, values);
+                if (result > output) {
+                    output = result;
+                }
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Calculates the average of the first expression, for all values in the valuesList.
+     *
+     * @param variables  All the variables to be used in the expressions.
+     * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
+     * @return The average of the first expression, for all values in the valuesList.
+     * @throws ComputationException if the expression cannot be resolved. E.g.: x/0.
+     */
+    private double average(Variable[] variables, ArrayList<double[]> valuesList) throws ComputationException {
+        double output = 0.0d;
+        Node expression = expressions[0];
+        for (double[] values : valuesList) {
+            output += expression.solve(variables, values);
+        }
+        return output / valuesList.size();
     }
 
     /**

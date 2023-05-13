@@ -49,7 +49,7 @@ public class RequestParseUtils {
     private static ComputationRequest parseComputationRequest(String request) throws ParsingException, CommandNotFoundException {
         String[] requestSplit = request.split(";");
         if(requestSplit.length < 3) {
-            throw new ParsingException("Could not parse \"" + request + "\" as a ComputationRequest: not enough arguments.");
+            throw new ParsingException("Could not parse \"" + request + "\": not enough arguments (found " + requestSplit.length + ", expected 3 or more).");
         }
         // Checks and parses the first argument.
         ComputationRequest.ComputationKind computationKind;

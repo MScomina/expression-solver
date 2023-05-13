@@ -17,7 +17,6 @@ public class ClientHandler extends Thread {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             while (true) {
                 String line = br.readLine();
-                server.incrementNumberOfRequests();
                 if (line.equals(server.getQuitCommand())) {
                     socket.close();
                     break;

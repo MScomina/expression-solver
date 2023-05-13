@@ -7,20 +7,13 @@ public class StatRequest implements Request {
     private final LineProcessingServer server;
     @Override
     public double[] process() {
-        int startingTime = (int) System.currentTimeMillis();
-        double output = 0;
-        switch (statType) {
-            case REQS:
-                output = server.getNumberOfRequests();
-                break;
-            case AVG_TIME:
-                output = 0;
-                break;
-            case MAX_TIME:
-                output = 0;
-                break;
-        }
-        double secondsElapsed = ((double)(System.currentTimeMillis() - startingTime))/1000.0d;
+        long startingTime = System.currentTimeMillis();
+        double output = switch (statType) {
+            case REQS -> server.getNumberOfRequests();
+            case AVG_TIME -> server.averageResponseTime();
+            case MAX_TIME -> server.maxResponseTime();
+        };
+        double secondsElapsed = ((double) (System.currentTimeMillis() - startingTime)) / 1000.0d;
         return new double[]{secondsElapsed, output};
     }
     public StatRequest(LineProcessingServer server, StatType statType) {

@@ -1,5 +1,7 @@
 package me.expression;
 
+import me.exceptions.ComputationException;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -12,6 +14,11 @@ public abstract class Node {
 
   public List<Node> getChildren() {
     return children;
+  }
+
+  //NOTE: This method is always meant to be overridden.
+  public double solve(Variable[] variables, double[] values) throws ComputationException {
+    return 0;
   }
 
   @Override

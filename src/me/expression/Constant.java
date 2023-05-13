@@ -1,7 +1,6 @@
 package me.expression;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 public class Constant extends Node {
@@ -15,6 +14,11 @@ public class Constant extends Node {
 
   public double getValue() {
     return value;
+  }
+
+  @Override
+  public double solve(Variable[] variables, double[] values) {
+    return this.value;
   }
 
   @Override
