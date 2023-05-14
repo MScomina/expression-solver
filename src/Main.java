@@ -1,16 +1,19 @@
+import me.connection.ComputationalServer;
 import me.connection.LineProcessingServer;
+import me.utils.LoggerUtils;
+
 import java.io.IOException;
 public class Main {
     public static void main(String... args) {
         try {
-            LineProcessingServer server = new LineProcessingServer(Integer.parseInt(args[0]), "BYE");
+            LineProcessingServer server = new ComputationalServer(Integer.parseInt(args[0]), "BYE");
             server.run();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NumberFormatException e) {
-            System.out.println("Port must be an integer.");
+            LoggerUtils.log("Port must be a number.", "ERROR");
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Port must be specified in the args.");
+            LoggerUtils.log("Port must be specified in the args.", "ERROR");
         }
     }
 }

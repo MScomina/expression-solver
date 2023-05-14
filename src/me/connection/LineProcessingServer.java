@@ -1,52 +1,47 @@
 package me.connection;
 
-import me.exceptions.RequestException;
-import me.requests.Request;
-import me.utils.RequestParseUtils;
+import me.utils.LoggerUtils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LineProcessingServer {
     private final int port;
-    private final List<Double> responseTimes;
+    protected final CopyOnWriteArrayList<Double> responseTimes;
     private final String quitCommand;
     public LineProcessingServer(int port, String quitCommand) {
         this.port = port;
         this.quitCommand = quitCommand;
-        this.responseTimes = new ArrayList<>();
+        this.responseTimes = new CopyOnWriteArrayList<>();
     }
     public void run() throws IOException {
-        ServerSocket serverSocket = new ServerSocket(port);
-        System.out.println("Server started on port " + port);
-        while (true) {
-            Socket socket = serverSocket.accept();
-            System.out.println("Client connected: " + socket.getInetAddress().getHostAddress());
-            ClientHandler clientHandler = new ClientHandler(socket, this);
-            clientHandler.start();
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            LoggerUtils.log("Server started on port " + port);
+            //Since it's a server, it should run forever.
+            while (true) {
+                Socket socket = serverSocket.accept();
+                ClientHandler clientHandler = new ClientHandler(socket, this);
+                LoggerUtils.log("Client connected on " + socket.getInetAddress().getHostAddress() + ", given Thread ID: " + clientHandler.threadId(), "Server");
+                clientHandler.start();
+            }
+        } catch (IOException e) {
+            LoggerUtils.log("IOException has been thrown by the ServerSocket: " + e.getMessage(), "Server", "ERROR");
         }
     }
-    public synchronized String process(String input) {
-        try {
-            Request request = RequestParseUtils.parseRequest(this, input);
-            double[] result = request.process();
-            responseTimes.add(result[0]);
-            return "OK;" + result[0] + ";" + result[1];
-        } catch (RequestException e) {
-            return e.getMessage();
-        }
+
+    public String process(String input) {
+        return input;
     }
 
     public String getQuitCommand() {
         return quitCommand;
     }
 
-    public double getNumberOfRequests() {
+    public int getNumberOfRequests() {
         return responseTimes.size();
     }
 

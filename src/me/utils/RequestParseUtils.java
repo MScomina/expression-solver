@@ -1,8 +1,8 @@
 package me.utils;
 
 import me.connection.LineProcessingServer;
-import me.exceptions.ParsingException;
 import me.exceptions.CommandNotFoundException;
+import me.exceptions.ParsingException;
 import me.expression.Node;
 import me.expression.Parser;
 import me.expression.VariableValues;
@@ -49,7 +49,7 @@ public class RequestParseUtils {
     private static ComputationRequest parseComputationRequest(String request) throws ParsingException, CommandNotFoundException {
         String[] requestSplit = request.split(";");
         if(requestSplit.length < 3) {
-            throw new ParsingException("Could not parse \"" + request + "\": not enough arguments (found " + requestSplit.length + ", expected 3 or more).");
+            throw new ParsingException("Could not parse the request: not enough arguments (found " + requestSplit.length + ", expected 3 or more).");
         }
         // Checks and parses the first argument.
         ComputationRequest.ComputationKind computationKind;
@@ -70,7 +70,7 @@ public class RequestParseUtils {
                 String[] variableValue = variableValuesSplit[k].split(":");
                 variableValues[k] = new VariableValues(variableValue);
             } catch (IllegalArgumentException e) {
-                throw new ParsingException("Could not parse \"" + variableValuesSplit[k] + "\" as a VariableValue: " + e.getMessage());
+                throw new ParsingException("Could not parse \"" + variableValuesSplit[k] + "\" as a VariableValue (" + e.getMessage() + ").");
             }
         }
         // Checks and parses the other arguments.

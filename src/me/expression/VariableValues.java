@@ -9,7 +9,7 @@ public class VariableValues {
     private final double step;
     public VariableValues(String[] s) {
         if(s.length != 4) {
-            throw new IllegalArgumentException("VariableValues constructor takes 4 arguments.");
+            throw new IllegalArgumentException("VariableValues constructor takes 4 arguments");
         }
         try {
             this.variable = new Variable(s[0]);
@@ -17,13 +17,13 @@ public class VariableValues {
             this.step = Double.parseDouble(s[2]);
             this.end = Double.parseDouble(s[3]);
         } catch (NumberFormatException e) {
-            throw new NumberFormatException("Could not parse String to double.");
+            throw new NumberFormatException("Could not parse String to double");
         }
         if(this.step <= 0) {
-            throw new IllegalArgumentException("Step must be greater than 0.");
+            throw new IllegalArgumentException("Step must be greater than 0");
         }
         if(this.start > this.end) {
-            throw new IllegalArgumentException("Start must be smaller than end.");
+            throw new IllegalArgumentException("Start must be smaller than end");
         }
     }
     public Variable getVariable() {

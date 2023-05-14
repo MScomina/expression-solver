@@ -1,5 +1,7 @@
 package me.connection;
 
+import me.utils.LoggerUtils;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -17,7 +19,13 @@ public class ClientHandler extends Thread {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             while (true) {
                 String line = br.readLine();
+                if (line == null) {
+                    LoggerUtils.log("Client disconnected abruptly: " + socket.getInetAddress().getHostAddress(), "Thread-" + this.threadId());
+                    socket.close();
+                    break;
+                }
                 if (line.equals(server.getQuitCommand())) {
+                    LoggerUtils.log("Client disconnected: " + socket.getInetAddress().getHostAddress(), "Thread-" + this.threadId());
                     socket.close();
                     break;
                 }
@@ -25,12 +33,12 @@ public class ClientHandler extends Thread {
                 bw.flush();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LoggerUtils.log("IOException has been thrown: " + socket.getInetAddress().getHostAddress(), "Thread-" + this.threadId(), "ERROR");
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                LoggerUtils.log("IOException has been thrown: " + socket.getInetAddress().getHostAddress(), "Thread-" + this.threadId(), "ERROR");
             }
         }
     }

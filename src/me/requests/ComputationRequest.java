@@ -13,9 +13,15 @@ public class ComputationRequest implements Request {
     private final ValuesKind valuesKind;
     private final VariableValues[] variableValues;
     private final Node[] expressions;
+
+    /**
+     * Starts the processing of the computation request.
+     *
+     * @return A double array made up of 2 elements, respectively the time taken to process the request and the result of the computation.
+     * @throws ComputationException If the computation fails at any point. Examples may include malformed requests, missing variables or non-computable expressions.
+     */
     @Override
-    public double[] process() throws ComputationException {
-        long startingTime = System.currentTimeMillis();
+    public double process() throws ComputationException {
         double output = 0.0d;
         Variable[] variables = new Variable[variableValues.length];
         for (int i = 0; i < variables.length; i++) {
@@ -53,8 +59,7 @@ public class ComputationRequest implements Request {
                 }
             }
         }
-        double secondsElapsed = ((double)(System.currentTimeMillis() - startingTime))/1000.0d;
-        return new double[]{secondsElapsed, output};
+        return output;
     }
 
     /**
@@ -129,7 +134,6 @@ public class ComputationRequest implements Request {
 
     /**
      * Calculates the minimum of all expressions, for all values in the valuesList.
-     *
      * @param variables  All the variables to be used in the expressions.
      * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
      * @return The minimum of all expressions, for all values in the valuesList.
@@ -150,7 +154,6 @@ public class ComputationRequest implements Request {
 
     /**
      * Calculates the maximum of all expressions, for all values in the valuesList.
-     *
      * @param variables  All the variables to be used in the expressions.
      * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
      * @return The maximum of all expressions, for all values in the valuesList.
@@ -171,7 +174,6 @@ public class ComputationRequest implements Request {
 
     /**
      * Calculates the average of the first expression, for all values in the valuesList.
-     *
      * @param variables  All the variables to be used in the expressions.
      * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
      * @return The average of the first expression, for all values in the valuesList.
@@ -204,17 +206,5 @@ public class ComputationRequest implements Request {
     public enum ValuesKind {
         GRID,
         LIST
-    }
-    public VariableValues[] getVariableValues() {
-        return variableValues;
-    }
-    public Node[] getExpressions() {
-        return expressions;
-    }
-    public ComputationKind getComputationKind() {
-        return computationKind;
-    }
-    public ValuesKind getValuesKind() {
-        return valuesKind;
     }
 }
