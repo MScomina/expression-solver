@@ -20,13 +20,13 @@ public class ClientHandler extends Thread {
             while (true) {
                 String line = br.readLine();
                 if (line == null) {
-                    LoggerUtils.log("Client disconnected abruptly: " + socket.getInetAddress().getHostAddress(), "Thread-" + this.threadId());
                     socket.close();
+                    LoggerUtils.log("Client disconnected abruptly: " + socket.getInetAddress().getHostAddress(), "Thread-" + this.threadId());
                     break;
                 }
                 if (line.equals(server.getQuitCommand())) {
-                    LoggerUtils.log("Client disconnected: " + socket.getInetAddress().getHostAddress(), "Thread-" + this.threadId());
                     socket.close();
+                    LoggerUtils.log("Client disconnected: " + socket.getInetAddress().getHostAddress(), "Thread-" + this.threadId());
                     break;
                 }
                 bw.write(server.process(line) + System.lineSeparator());

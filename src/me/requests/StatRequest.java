@@ -26,8 +26,8 @@ public class StatRequest implements Request {
     }
 
     /**
-     * This is used to determine what kind of statistic is being requested.
-     * Also used in {@link me.utils.RequestParseUtils} for checking command list.
+     * This is used to determine what kind of statistic is being requested. <br>
+     * It is also used in {@linkplain me.utils.RequestParseUtils RequestParseUtils} for checking the command list.
      */
     public enum StatType {
         REQS,

@@ -19,27 +19,29 @@ public class VariableValues {
         } catch (NumberFormatException e) {
             throw new NumberFormatException("Could not parse String to double");
         }
-        if(this.step <= 0) {
+        if (this.step <= 0) {
             throw new IllegalArgumentException("Step must be greater than 0");
         }
-        if(this.start > this.end) {
+        if (this.start > this.end) {
             throw new IllegalArgumentException("Start must be smaller than end");
         }
     }
+
     public Variable getVariable() {
         return variable;
     }
-    public double[] getValues() {
-        int size = (int) ((end - start) / step) + 1;
-        double[] values = new double[size];
-        for (int i = 0; i < size; i++) {
-            values[i] = start + i * step;
+
+    public double getValueAt(int index) {
+        if (index < 0 || index >= getNumberOfValues()) {
+            throw new IllegalArgumentException("Index out of bounds");
         }
-        return values;
+        return start + index * step;
     }
+
     public int getNumberOfValues() {
         return (int) ((end - start) / step) + 1;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -16,9 +16,9 @@ public class ComputationalServer extends LineProcessingServer {
     }
 
     /**
-     * Processes the input, converting it into a Request object and then processing it. This process is handled using a Semaphore so that it cannot do more computations than the number of available processors.
+     * Processes the input, converting it into a {@link Request} object and then processing it. This process is handled using a Semaphore so that it cannot do more computations than the number of available processors.
      * <p>
-     * NOTE: It is assumed that the "response time" is the time taken to respond, not the time taken to perform the calculations. This means that the time will be longer if the method is blocked by the Semaphore.
+     * NOTE: It is assumed that "response time" is time taken to respond, not time taken to perform the calculations. This means that time will increase if the method is blocked by the Semaphore.
      * </p>
      *
      * @param input The input request, in String form, to process.

@@ -13,11 +13,12 @@ import me.requests.StatRequest;
 public class RequestParseUtils {
     /**
      * Parses a request string into a Request object.
-     * @param server The server that is processing the request.
+     *
+     * @param server        The server that is processing the request.
      * @param requestString The request string to be parsed.
-     * @throws ParsingException if the request string could not be parsed into a proper request.
-     * @throws CommandNotFoundException if the request string is not contained in the list of expected commands.
      * @return A {@link Request} object. Can then be further casted into a {@link StatRequest} or {@link ComputationRequest}, depending on the original request.
+     * @throws ParsingException         if the request string could not be parsed into a proper request.
+     * @throws CommandNotFoundException if the request string is not contained in the list of expected commands. See {@linkplain StatRequest.StatType StatType}, {@linkplain ComputationRequest.ComputationKind ComputationKind} and {@linkplain ComputationRequest.ValuesKind ValuesKind}.
      */
     public static Request parseRequest(LineProcessingServer server, String requestString) throws ParsingException, CommandNotFoundException {
         // Handling of STAT, or StatRequests.
@@ -29,8 +30,9 @@ public class RequestParseUtils {
     }
 
     /**
-     * Handles the parsing of a StatRequest.
-     * @throws CommandNotFoundException if the request string is not contained in the list of commands inside StatType.
+     * Handles the parsing of a {@link StatRequest}.
+     *
+     * @throws CommandNotFoundException if the requested command is not contained in the list of commands inside {@linkplain StatRequest.StatType StatType}.
      */
     private static StatRequest parseStatRequest(LineProcessingServer server, String request) throws CommandNotFoundException {
         try {
@@ -42,9 +44,9 @@ public class RequestParseUtils {
     }
 
     /**
-     * Handles the parsing of a ComputationRequest.
-     * @throws ParsingException if the request string could not be parsed as a ComputationRequest.
-     * @throws CommandNotFoundException if the request string is not contained in the combination of ComputationKind and ValuesKind commands.
+     * Handles the parsing of a {@link ComputationRequest}.
+     * @throws ParsingException if the request string could not be parsed as a {@link ComputationRequest}.
+     * @throws CommandNotFoundException if the requested command is not contained in the combination of {@linkplain ComputationRequest.ComputationKind ComputationKind} and {@linkplain ComputationRequest.ValuesKind ValuesKind} commands.
      */
     private static ComputationRequest parseComputationRequest(String request) throws ParsingException, CommandNotFoundException {
         String[] requestSplit = request.split(";");

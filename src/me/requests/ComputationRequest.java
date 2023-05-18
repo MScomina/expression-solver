@@ -5,19 +5,40 @@ import me.expression.Node;
 import me.expression.Variable;
 import me.expression.VariableValues;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 public class ComputationRequest implements Request {
+    /**
+     * This variable marks if the computation is complete or not. It is set to false at the start and it only can turn true if there aren't any more values to compute from {@link #getNextValues()}.
+     */
+    private boolean computationDone;
+    private final int[] lengths;
+    private final int[] indexes;
     private final ComputationKind computationKind;
     private final ValuesKind valuesKind;
     private final VariableValues[] variableValues;
     private final Node[] expressions;
 
+    public ComputationRequest(ComputationKind computationKind, ValuesKind valuesKind, VariableValues[] variableValues, Node[] expressions) {
+        this.computationKind = computationKind;
+        this.valuesKind = valuesKind;
+        this.variableValues = variableValues;
+        this.expressions = expressions;
+
+        this.computationDone = false;
+        this.lengths = new int[variableValues.length];
+        this.indexes = new int[variableValues.length];
+
+        for (int i = 0; i < variableValues.length; i++) {
+            this.lengths[i] = variableValues[i].getNumberOfValues();
+            this.indexes[i] = 0;
+        }
+    }
+
     /**
      * Starts the processing of the computation request.
+     * <p>
+     * NOTE: This method is meant to be called only once per instance.
      *
-     * @return A double array made up of 2 elements, respectively the time taken to process the request and the result of the computation.
+     * @return The result of the computation of the request.
      * @throws ComputationException If the computation fails at any point. Examples may include malformed requests, missing variables or non-computable expressions.
      */
     @Override
@@ -27,31 +48,24 @@ public class ComputationRequest implements Request {
         for (int i = 0; i < variables.length; i++) {
             variables[i] = variableValues[i].getVariable();
         }
-        switch (valuesKind) {
-            case GRID -> {
-                switch (computationKind) {
-                    case MIN -> output = this.minimum(variables, this.getGridValues());
-                    case MAX -> output = this.maximum(variables, this.getGridValues());
-                    case AVG -> output = this.average(variables, this.getGridValues());
-                    case COUNT -> {
+        switch (computationKind) {
+            case MIN -> output = this.minimum(variables);
+            case MAX -> output = this.maximum(variables);
+            case AVG -> output = this.average(variables);
+            case COUNT -> {
+                switch (valuesKind) {
+                    case GRID -> {
                         long calc = 1;
                         for (VariableValues variableValue : variableValues) {
                             calc *= variableValue.getNumberOfValues();
                         }
                         output = calc;
                     }
-                }
-            }
-            case LIST -> {
-                switch (computationKind) {
-                    case MIN -> output = this.minimum(variables, this.getListValues());
-                    case MAX -> output = this.maximum(variables, this.getListValues());
-                    case AVG -> output = this.average(variables, this.getListValues());
-                    case COUNT -> {
+                    case LIST -> {
                         int lengthCheck = variableValues[0].getNumberOfValues();
                         for (VariableValues variableValue : variableValues) {
                             if (variableValue.getNumberOfValues() != lengthCheck) {
-                                throw new ComputationException("The number of values must be the same for all VariableValues.");
+                                throw new ComputationException("Cannot compute LIST: the number of values must be the same for all VariableValues.");
                             }
                         }
                         output = lengthCheck;
@@ -63,87 +77,70 @@ public class ComputationRequest implements Request {
     }
 
     /**
-     * Calculates the LIST values (element-wise merging of values from all VariableValues).
-     * @return A 2D array of doubles, containing the tuples of all VariableValues.
-     * @throws ComputationException if the number of values is not the same for all VariableValues.
+     * Gives the next values for the computation, if any.
+     *
+     * @return GRID: Returns the next values for the computation in all the cartesian product of the variable values.
+     * <p>
+     * LIST: Returns the next values for the computation in the element-wise merging of the variable values.
+     * </p>
+     * <p>
+     * {@code null} if the computation is done.
+     * </p>
+     * @throws ComputationException if, in a LIST computation, the number of values is not the same for all VariableValues.
      */
-    private ArrayList<double[]> getListValues() throws ComputationException {
-        int lengthCheck = variableValues[0].getNumberOfValues();
-        for (VariableValues variableValue : variableValues) {
-            if (variableValue.getNumberOfValues() != lengthCheck) {
-                throw new ComputationException("The number of values must be the same for all VariableValues.");
+    private double[] getNextValues() throws ComputationException {
+        if (computationDone) return null;
+        double[] values = new double[variableValues.length];
+        switch (valuesKind) {
+            case GRID -> {
+                int n = variableValues.length;
+                for (int i = 0; i < n; i++) {
+                    values[i] = variableValues[i].getValueAt(indexes[i]);
+                }
+                //Checks if the indices are at the end of the arrays, from the left, and resets them if so.
+                //Example: if lengths are [3,2,4], indexes will go [0,0,0], [1,0,0], [2,0,0], [0,1,0], [1,1,0] etc. until [2,1,3], similar to a positional number system.
+                //This will inevitably create all possible combinations of the arrays, using all the possible indexes.
+                int k = 0;
+                while (k <= n - 1 && indexes[k] == lengths[k] - 1) {
+                    indexes[k] = 0;
+                    k++;
+                }
+                if (k == n) {
+                    computationDone = true;
+                } else {
+                    indexes[k]++;
+                }
+            }
+            case LIST -> {
+                for (int length : lengths) {
+                    if (length != lengths[0]) {
+                        throw new ComputationException("Cannot compute LIST: the number of values must be the same for all VariableValues.");
+                    }
+                }
+                for (int i = 0; i < variableValues.length; i++) {
+                    values[i] = variableValues[i].getValueAt(indexes[0]);
+                }
+                indexes[0]++;
+                if (indexes[0] == variableValues[0].getNumberOfValues()) {
+                    computationDone = true;
+                }
             }
         }
-        double[][] listValues = new double[lengthCheck][variableValues.length];
-        for (int k = 0; k < variableValues.length; k++) {
-            double[] values = variableValues[k].getValues();
-            for(int i = 0; i < values.length; i++) {
-                listValues[i][k] = values[i];
-            }
-        }
-        return new ArrayList<>(Arrays.asList(listValues));
-    }
-    public ComputationRequest(ComputationKind computationKind, ValuesKind valuesKind, VariableValues[] variableValues, Node[] expressions) {
-        this.computationKind = computationKind;
-        this.valuesKind = valuesKind;
-        this.variableValues = variableValues;
-        this.expressions = expressions;
+        return values;
     }
 
     /**
-     * Calculates the GRID values (cartesian product of all VariableValues).
-     * @return A 2D array of doubles, containing the cartesian product of all VariableValues.
-     */
-    private ArrayList<double[]> getGridValues() {
-        int n = variableValues.length;
-        double[][] arrays = new double[n][];
-        for(int k = 0; k < n; k++) {
-            arrays[k] = variableValues[k].getValues();
-        }
-        ArrayList<double[]> result = new ArrayList<>();
-        //Cartesian product.
-        int[] indices = new int[n];
-        int[] lengths = new int[n];
-        for (int i = 0; i < n; i++) {
-            lengths[i] = arrays[i].length;
-        }
-        boolean done = false;
-        while (!done) {
-            //Creates a new array to add with the current indices.
-            double[] current = new double[n];
-            for (int i = 0; i < n; i++) {
-                current[i] = arrays[i][indices[i]];
-            }
-            result.add(current);
-            //Checks if the indices are at the end of the arrays, from the left, and resets them if so.
-            //Example: if lengths are [3,2,4], indexes will go [0,0,0], [1,0,0], [2,0,0], [0,1,0], [1,1,0] etc. until [2,1,3], similar to a positional number system.
-            //This will inevitably create all possible combinations of the arrays, using all the indexes.
-            int k = 0;
-            while (k <= n-1 && indices[k] == lengths[k] - 1) {
-                indices[k] = 0;
-                k++;
-            }
-            if (k == n) {
-                done = true;
-            } else {
-                indices[k]++;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Calculates the minimum of all expressions, for all values in the valuesList.
-     * @param variables  All the variables to be used in the expressions.
-     * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
-     * @return The minimum of all expressions, for all values in the valuesList.
+     * Calculates the minimum of all expressions.
+     *
+     * @param variables All the variables to be used in the expressions.
+     * @return The minimum of all expressions, for all values depending on {@link #getNextValues()} and {@link #computationDone}.
      * @throws ComputationException if the expression cannot be resolved.: E.g. x/0.
      */
-    private double minimum(Variable[] variables, ArrayList<double[]> valuesList) throws ComputationException {
+    private double minimum(Variable[] variables) throws ComputationException {
         double output = Double.MAX_VALUE;
         for (Node expression : expressions) {
-            for (double[] values : valuesList) {
-                double result = expression.solve(variables, values);
+            while (!computationDone) {
+                double result = expression.solve(variables, this.getNextValues());
                 if (result < output) {
                     output = result;
                 }
@@ -153,17 +150,17 @@ public class ComputationRequest implements Request {
     }
 
     /**
-     * Calculates the maximum of all expressions, for all values in the valuesList.
-     * @param variables  All the variables to be used in the expressions.
-     * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
-     * @return The maximum of all expressions, for all values in the valuesList.
+     * Calculates the maximum of all expressions.
+     *
+     * @param variables All the variables to be used in the expressions.
+     * @return The maximum of all expressions, for all values depending on {@link #getNextValues()} and {@link #computationDone}.
      * @throws ComputationException if the expression cannot be resolved. E.g.: x/0.
      */
-    private double maximum(Variable[] variables, ArrayList<double[]> valuesList) throws ComputationException {
+    private double maximum(Variable[] variables) throws ComputationException {
         double output = -Double.MAX_VALUE;
         for (Node expression : expressions) {
-            for (double[] values : valuesList) {
-                double result = expression.solve(variables, values);
+            while (!computationDone) {
+                double result = expression.solve(variables, this.getNextValues());
                 if (result > output) {
                     output = result;
                 }
@@ -173,24 +170,26 @@ public class ComputationRequest implements Request {
     }
 
     /**
-     * Calculates the average of the first expression, for all values in the valuesList.
-     * @param variables  All the variables to be used in the expressions.
-     * @param valuesList All the values to be used in the expressions, matched to the corresponding variables.
-     * @return The average of the first expression, for all values in the valuesList.
+     * Calculates the average of the first expression.
+     *
+     * @param variables All the variables to be used in the expression.
+     * @return The average of the first expression, for all values depending on {@link #getNextValues()} and {@link #computationDone}.
      * @throws ComputationException if the expression cannot be resolved. E.g.: x/0.
      */
-    private double average(Variable[] variables, ArrayList<double[]> valuesList) throws ComputationException {
+    private double average(Variable[] variables) throws ComputationException {
         double output = 0.0d;
+        long size = 0;
         Node expression = expressions[0];
-        for (double[] values : valuesList) {
-            output += expression.solve(variables, values);
+        while (!computationDone) {
+            output += expression.solve(variables, this.getNextValues());
+            size++;
         }
-        return output / valuesList.size();
+        return output / size;
     }
 
     /**
      * This is used to determine what kind of computation is being requested.<br>
-     * Also used in {@link me.utils.RequestParseUtils} for checking command list.
+     * It is also used in {@linkplain  me.utils.RequestParseUtils RequestParseUtils} for checking the command list.
      */
     public enum ComputationKind {
         MIN,
@@ -201,7 +200,7 @@ public class ComputationRequest implements Request {
 
     /**
      * This is used to determine what kind of values are being requested. <br>
-     * Also used in {@link me.utils.RequestParseUtils} for checking command list.
+     * It is also used in {@linkplain  me.utils.RequestParseUtils RequestParseUtils} for checking the command list.
      */
     public enum ValuesKind {
         GRID,

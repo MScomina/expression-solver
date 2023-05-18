@@ -82,10 +82,16 @@ public class Parser {
       if (closedBracketToken !=null && closedBracketToken.start==cursor) {
         cursor = closedBracketToken.end;
       } else {
+        if (cursor == string.length()) {
+          throw new IllegalArgumentException(String.format(
+                  "Missing closed bracket: position '%d'",
+                  cursor
+          ));
+        }
         throw new IllegalArgumentException(String.format(
-            "Unexpected char at %d instead of closed bracket: '%s'",
-            cursor,
-            string.charAt(cursor)
+                "Unexpected char at %d instead of closed bracket: '%s'",
+                cursor,
+                string.charAt(cursor)
         ));
       }
       Operator.Type operatorType = null;
